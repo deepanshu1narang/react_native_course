@@ -1,16 +1,13 @@
-import { Stack } from "expo-router";
+import AppNavigator from "@/lib/AppNavigator";
+import { AuthContextProvider } from "@/lib/auth-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function RootLayout() {
   return (
-    <Stack>
-
-      <Stack.Screen name="index" options={{
-        title: "Home"
-      }} />
-      <Stack.Screen name="login" options={{
-        title: "Login"
-      }} />
-      
-    </Stack>
+    <AuthContextProvider>
+      <SafeAreaProvider>
+        <AppNavigator />
+      </SafeAreaProvider>
+    </AuthContextProvider>
   );
 }
