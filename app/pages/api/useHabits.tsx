@@ -1,6 +1,7 @@
 // useHabits.ts
 import { Habit } from "@/types/database.type";
-import { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback, useState } from "react";
 import useAuth from "../../../lib/auth-context";
 import { getHabits } from "./habits";
 
@@ -10,39 +11,30 @@ export const useHabits = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const { user } = useAuth();
 
-    useEffect(() => {
-        const fetchHabits = async () => {
-            setLoading(true);
-            try{
-                console.log(user?.$id, "<<<<<<<<userId");
-
-                const { data, status_code } = await getHabits(user?.$id!);
-                if(status_code === 200)
-                    setHabits(data ?? []);
-                
-                // TODO: subscribe habits
-                // TODO: subscribe completions
-                
-                // TODO: fetchHabits()
-                // TODO: fetchTodayCompletions()
+    useFocusEffect(
+        useCallback(() => {
+            const fetchHabits = async () => {
+                setLoading(true);
+                try {
+                    console.log(user?.$id, "<<<<<<<<<userId");
+                    const { data, status_code } = await getHabits(user?.$id!);
+                    if (status_code === 200) setHabits(data ?? []);
+                    // TODO: subscribe habits
+                    // TODO: subscribe completions
+                    // TODO: fetchHabits()
+                    // TODO: fetchTodayCompletions()
+                } catch (err) {
+                    console.log(err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            if (user?.$id) {
+                fetchHabits();
             }
-            catch(err){
-                console.log(err);
-            }
-            finally{
-                setLoading(false);
-            }
-        };
-        
-        console.log(user, "<<<<<<<<userId22");
-        if (user?.$id) {
-            fetchHabits();
-        }
-
-        return () => {
-            // TODO: unsubscribe
-        };
-    }, [user]);
+            // Optionally, return a cleanup function here
+        }, [user])
+    );
 
     return {
         habits,

@@ -6,6 +6,7 @@ import { Button, Surface, Text } from "react-native-paper";
 // import { useHabits } from "./useHabits";
 import { useHabits } from "@/app/pages/api/useHabits";
 import useAuth from "@/lib/auth-context";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 type ActionForm = {
   habitId: string;
@@ -67,8 +68,22 @@ export default function Index() {
                 </Text>
 
                 <View style={styles.cardFooter}>
-                  <Text>{habit.streak_count} day streak</Text>
-                  <Text>{habit.frequency}</Text>
+                  <View style={styles.cardFooter}>
+
+                    <MaterialCommunityIcons
+                      name="fire"
+                      size={18}
+                      color={"#ff9800"}
+                    />
+                    <Text style={styles.streakText}>{habit.streak_count} day streak</Text>
+                  </View>
+                   <View style={styles.frequencyBadge}>
+                      <Text style={styles.frequencyText}>
+                        {" "}
+                        {habit.frequency.charAt(0).toUpperCase() +
+                          habit.frequency.slice(1)}
+                      </Text>
+                    </View>
                 </View>
               </View>
             </Surface>
