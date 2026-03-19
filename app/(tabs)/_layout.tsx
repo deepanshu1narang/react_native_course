@@ -17,12 +17,12 @@ export default function TabsLayout() {
           return <MaterialCommunityIcons size={size} color={color} name="calendar-today" />
         }
       }} />
-      <Tabs.Screen name="streaks" options={{
+      {/* <Tabs.Screen name="streaks" options={{
         title: "Streaks",
         tabBarIcon: ({color, size}) => {
           return <MaterialCommunityIcons size={size} color={color} name="chart-line" />
         }
-      }} />
+      }} /> */}
       <Tabs.Screen name="addHabit" options={{
         title: "Add Habit",
         tabBarIcon: ({color, size}) => {

@@ -60,7 +60,7 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
             // Save session ID to SecureStore for persistence
             await SecureStore.setItemAsync('sessionId', session.$id);
             setIsAuth(true);
-            getUser();
+            await getUser();
         }
         catch (error) {
             if (error instanceof Error) {

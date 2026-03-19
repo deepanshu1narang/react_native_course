@@ -1,12 +1,12 @@
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Swipeable } from "react-native-gesture-handler";
 import { Button, Surface, Text } from "react-native-paper";
 // import { useHabits } from "./useHabits";
 import { useHabits } from "@/app/pages/api/useHabits";
 import useAuth from "@/lib/auth-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Swipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 type ActionForm = {
   habitId: string;
@@ -14,13 +14,13 @@ type ActionForm = {
 };
 
 export default function Index() {
-  const { user, signOut } = useAuth();
+  const {  signOut } = useAuth();
 
-  const { habits, completedHabits, loading } = useHabits();
+  const { habits, completedHabits, loading, handleCompleteHabit, handleDeleteHabit } = useHabits();
 
   const { handleSubmit, setValue } = useForm<ActionForm>();
 
-  const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
+  const swipeableRefs = useRef<{ [key: string]: SwipeableMethods | null }>({});
 
   const onAction = (data: ActionForm) => {
     const { habitId, action } = data;
@@ -42,6 +42,35 @@ export default function Index() {
     handleSubmit(onAction)();
   };
 
+  const isHabitCompleted = (habitId: string) =>
+    completedHabits?.includes(habitId);
+
+  const renderRightActions = (habitId: string) => (
+    <View style={styles.swipeActionRight}>
+      {isHabitCompleted(habitId) ? (
+        <Text style={{ color: "#fff" }}> Completed!</Text>
+      ) : (
+        <MaterialCommunityIcons
+          name="check-circle-outline"
+          size={32}
+          color={"#fff"}
+        />
+      )}
+    </View>
+  );
+
+  const renderLeftActions = () => (
+    <View style={styles.swipeActionLeft}>
+      <MaterialCommunityIcons
+        name="trash-can-outline"
+        size={32}
+        color={"#fff"}
+      />
+    </View>
+  );
+
+
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -59,34 +88,54 @@ export default function Index() {
         </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
-          {habits.map((habit) => (
-            <Surface key={habit.$id} style={styles.card}>
-              <View style={styles.cardContent}>
-                <Text style={styles.cardTitle}>{habit.title}</Text>
-                <Text style={styles.cardDescription}>
-                  {habit.description}
-                </Text>
+          {habits.map((habit, key) => (
+            <Swipeable
+              ref={(ref) => {
+                swipeableRefs.current[habit.$id] = ref;
+              }}
+              key={key}
+              overshootLeft={false}
+              overshootRight={false}
+              renderLeftActions={renderLeftActions}
+              renderRightActions={() => renderRightActions(habit.$id)}
+              onSwipeableOpen={(direction) => {
+                if (direction === "left") {
+                  handleCompleteHabit(habit);
+                } else if (direction === "right") {
+                  handleDeleteHabit(habit);
+                }
 
-                <View style={styles.cardFooter}>
+                swipeableRefs.current[habit.$id]?.close();
+              }}
+            >
+              <Surface key={habit.$id} style={styles.card}>
+                <View style={styles.cardContent}>
+                  <Text style={styles.cardTitle}>{habit.title}</Text>
+                  <Text style={styles.cardDescription}>
+                    {habit.description}
+                  </Text>
+
                   <View style={styles.cardFooter}>
+                    <View style={styles.cardFooter}>
 
-                    <MaterialCommunityIcons
-                      name="fire"
-                      size={18}
-                      color={"#ff9800"}
-                    />
-                    <Text style={styles.streakText}>{habit.streak_count} day streak</Text>
-                  </View>
-                   <View style={styles.frequencyBadge}>
+                      <MaterialCommunityIcons
+                        name="fire"
+                        size={18}
+                        color={"#ff9800"}
+                      />
+                      <Text style={styles.streakText}>{habit.streak_count} day streak</Text>
+                    </View>
+                    <View style={styles.frequencyBadge}>
                       <Text style={styles.frequencyText}>
                         {" "}
                         {habit.frequency.charAt(0).toUpperCase() +
                           habit.frequency.slice(1)}
                       </Text>
                     </View>
+                  </View>
                 </View>
-              </View>
-            </Surface>
+              </Surface>
+            </Swipeable>
           ))}
         </ScrollView>
       )}

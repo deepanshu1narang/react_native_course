@@ -3,32 +3,16 @@ import { Habit } from "@/types/database.type";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import useAuth from "../../../lib/auth-context";
-import { getHabits } from "./habits";
+import { completeHabit, deleteHabit, getHabits } from "./habits";
 
 export const useHabits = () => {
     const [habits, setHabits] = useState<Habit[]>([]);
-    const [completedHabits, setCompletedHabits] = useState([]);
+    const [completedHabits, setCompletedHabits] = useState<string[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const { user } = useAuth();
 
     useFocusEffect(
         useCallback(() => {
-            const fetchHabits = async () => {
-                setLoading(true);
-                try {
-                    console.log(user?.$id, "<<<<<<<<<userId");
-                    const { data, status_code } = await getHabits(user?.$id!);
-                    if (status_code === 200) setHabits(data ?? []);
-                    // TODO: subscribe habits
-                    // TODO: subscribe completions
-                    // TODO: fetchHabits()
-                    // TODO: fetchTodayCompletions()
-                } catch (err) {
-                    console.log(err);
-                } finally {
-                    setLoading(false);
-                }
-            };
             if (user?.$id) {
                 fetchHabits();
             }
@@ -36,11 +20,38 @@ export const useHabits = () => {
         }, [user])
     );
 
+    const fetchHabits = async () => {
+        setLoading(true);
+        try {
+            const { data, status_code } = await getHabits(user?.$id!);
+            if (status_code === 200) setHabits(data ?? []);
+            // TODO: subscribe habits
+            // TODO: subscribe completions
+            // TODO: fetchHabits()
+            // TODO: fetchTodayCompletions()
+        } catch (err) {
+            console.log(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const handleDeleteHabit = async (habit: Habit) => {
+        await deleteHabit(habit.$id);
+        await fetchHabits();
+    }
+
+    const handleCompleteHabit = async (habit: Habit) => {
+        await completeHabit(habit.$id, habit.streak_count);
+        await fetchHabits();
+    }
+
     return {
         habits,
         completedHabits,
         setHabits,
         setCompletedHabits,
-        loading
+        loading, handleDeleteHabit, handleCompleteHabit
     };
 };
